@@ -20,7 +20,7 @@
  * Define Variables
  */
 #define CAR_SPEED 50
-#define HOT 100
+#define HOT 37
 typedef unsigned char u8;
 unsigned char door;
 dht DHT;
