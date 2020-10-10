@@ -196,8 +196,6 @@ void setup() {
   pinMode(buzzer,OUTPUT);
   pinMode(light,OUTPUT);
   Serial.begin(9600);
-  //digitalWrite(ENA, HIGH);
-  //digitalWrite(ENB, HIGH);
 }
 
 /**
