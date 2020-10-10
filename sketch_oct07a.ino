@@ -19,7 +19,7 @@
 /*
  * Define Variables
  */
-#define CAR_SPEED 50
+#define CAR_SPEED 150
 #define HOT 37
 typedef unsigned char u8;
 unsigned char door;
@@ -28,6 +28,9 @@ const int sensorMin = 0;
 const int sensorMax = 1024;
 unsigned char current_temp;
 int current_flame;
+int door1 = 0;
+int door2 = 0;
+int door3 = 0;
 
 /**
  * Sensor Methods
@@ -45,8 +48,22 @@ int current_flame;
   return range;
  }
 
-//Door read/selection (prioritize after presentation)
-/*void doorSelect() {
+//Buzzer
+void buzz(){
+  tone(buzzer, 1000);
+}
+
+//Light
+void flash(){
+  digitalWrite(light,HIGH);
+}
+
+//Door Read/Selection
+void doorSelect() {
+  //From Bluetooth sensors not built
+  door1 = Serial.read();
+  door2 = Serial.read();
+  door3 = Serial.read();
   if (door1 > HOT) {
     if (door2 > HOT) {
       if (door3 > HOT) {
@@ -57,61 +74,48 @@ int current_flame;
     else return 2;
   }
   else return 1;
-}*/
-
-//Buzzer
-void buzz(){
-  tone(buzzer,1000);
-  delay(1000);
-  noTone(buzzer);
-  delay(1000); 
-}
-
-//Light
-void flash(){
-  digitalWrite(light,HIGH);
 }
 
 /**
  * Movement Methods
  */
-void forward(u8 car_speed) {
-  analogWrite(ENA, car_speed);
-  analogWrite(ENB, car_speed);
+void forward(int iSpeed) {
+  analogWrite(ENA, iSpeed);
+  analogWrite(ENB, iSpeed);
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
 }
 
-void back(u8 car_speed) {
-  analogWrite(ENA, car_speed);
-  analogWrite(ENB, car_speed);
+void back(int iSpeed) {
+  analogWrite(ENA, iSpeed);
+  analogWrite(ENB, iSpeed);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
 }
 
-void left(u8 car_speed) {
-  analogWrite(ENA, 250);
-  analogWrite(ENB, 250);
+void left(int iSpeed) {
+  analogWrite(ENA, iSpeed);
+  analogWrite(ENB, iSpeed);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
 }
 
-void right(u8 car_speed) {
-  analogWrite(ENA, 250);
-  analogWrite(ENB, 250);
+void right(int iSpeed) {
+  analogWrite(ENA, iSpeed);
+  analogWrite(ENB, iSpeed);
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
 }
 
-void stop() {
+void car_stop() {
   digitalWrite(ENA, LOW);
   digitalWrite(ENB, LOW);
 }
@@ -121,39 +125,61 @@ void stop() {
  */
 
 void door1_path() {
-  forward(CAR_SPEED);
-  delay(1500);
-  left(CAR_SPEED);
-  delay(1000);
-  forward(CAR_SPEED);
-  delay(2000);
   right(CAR_SPEED);
-  delay(1000);
-  forward(CAR_SPEED); 
-  delay(1500);
-  left(CAR_SPEED);
-  delay(1000);
+  delay(750);
   forward(CAR_SPEED);
-  delay(1500);
-  stop();
+  delay(6000);
+  right(CAR_SPEED);
+  delay(750);
+  forward(CAR_SPEED);
+  delay(13000);
+  left(CAR_SPEED);
+  delay(750);
+  forward(CAR_SPEED);
+  delay(18000);
+  car_stop();
 }
 
 void door2_path(){
   forward(CAR_SPEED);
-  delay(1500);
-  stop();
+  delay(7000);
+  left(CAR_SPEED);
+  delay(750);
+  forward(CAR_SPEED);
+  delay(16000);
+  car_stop();
 }
 
 void door3_path(){
+  forward(CAR_SPEED);
+  delay(1500);
+  left(CAR_SPEED);
+  delay(750);
+  forward(CAR_SPEED);
+  delay(4000);
   right(CAR_SPEED);
-  delay(1000);
-  stop();
+  delay(750);
+  forward(CAR_SPEED); 
+  delay(3500);
+  left(CAR_SPEED);
+  delay(450);
+  forward(CAR_SPEED);
+  delay(4500);
+  car_stop();
 }
 
 void door4_path(){
-  left(CAR_SPEED);
+  forward(CAR_SPEED);
   delay(1000);
-  stop();
+  right(CAR_SPEED);
+  delay(600);
+  forward(CAR_SPEED); 
+  delay(15000);
+  left(CAR_SPEED);
+  delay(750);
+  forward(CAR_SPEED);
+  delay(9000);
+  car_stop();
 }
 
 /**
@@ -169,6 +195,9 @@ void setup() {
   pinMode(ENB,OUTPUT);
   pinMode(buzzer,OUTPUT);
   pinMode(light,OUTPUT);
+  Serial.begin(9600);
+  //digitalWrite(ENA, HIGH);
+  //digitalWrite(ENB, HIGH);
 }
 
 /**
@@ -181,15 +210,14 @@ void loop() {
   if(current_temp > HOT || current_flame < 2) {
     buzz();
     flash();
-    //door = doorSelect();
-    door = 1;
+    door = doorSelect();
     switch(door){
       case 1: door1_path(); break;
       case 2: door2_path(); break;
       case 3: door3_path(); break;
       case 4: door4_path(); break;
       default: break;
-    }
+    }    
   delay(5000); 
   }      
 }
